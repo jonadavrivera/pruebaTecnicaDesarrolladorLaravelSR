@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: pruebaTecnica
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+    networks:
+      - redPruebaTecnica
+networks:
+  redPruebaTecnica:
+    driver: bridge
+volumes:
+  mysql_data:
+    driver: local
