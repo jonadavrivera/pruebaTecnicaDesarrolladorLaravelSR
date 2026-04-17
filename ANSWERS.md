@@ -154,7 +154,6 @@ foreach ($books as $book) {
 Aquí Laravel obtiene todos los libros y sus autores en un menos número de consultas.
 Pero es importante utilizarlo de forma controlada, ya que también puede traer información que no siempre será necesaria si no se planea correctamente.
 
-
 Con estos ejemplos es donde se detecta el problema de la consulta N+1, que significa, 1 consulta para obtener los registros principales y N consultas para obtener los registros relacionados.
 Con el uso de eager loading se puede reducir este problema.
 
@@ -176,7 +175,6 @@ Para que funcione sin cargar datos de más es importante tener una correcta plan
 También se debe evitar acceder a las relaciones dentro de ciclos sin haberlas cargado previamente, ya que esto provocaría que Laravel ejecute múltiples consultas adicionales por cada registro. Otra buena práctica es seleccionar únicamente los campos necesarios, lo que ayuda a optimizar la consulta y reducir el consumo de recursos.
 
 En algunos casos donde no se tenga la certeza de si una relación ya fue cargada, se puede utilizar loadMissing(), el cual permite cargar la relación solo si aún no ha sido incluida, evitando consultas duplicadas.
-
 
 un ejemplo puede ser:
 
@@ -304,13 +302,12 @@ public function update(Request $request, $id)
 
 #### Respuesta 2.1
 Los problemas que se identifican son:
-1.	No existe una validación de los datos que se reciben en el request, lo cual puede provocar que se guarden valores incorrectos o inseguros.
-2.	Se utiliza find() sin validar si el registro existe. Esto puede provocar errores si el order no es encontrado. se puede utilizar findOrFail() para enviar un error 404 si el registro no es encontrado.
-3.	Se accede a la relación $order->user sin validar si el usuario existe, lo que puede generar errores si la relación es null.
-4.	No se está utilizando correctamente la inyección de dependencias, ya que se recibe el $id en lugar del modelo directamente.
-5.	Se está colocando demasiada lógica dentro del controlador, lo cual puede hacer que crezca demasiado y sea difícil de mantener se puede separar en un Service o a un Job.
-6.	El envío de correo se realiza de forma síncrona con Mail::send(), lo cual puede afectar el rendimiento de la aplicación. Es mejor utilizar colas para ejecutar esta tarea en segundo plano.
-
+1. No existe una validación de los datos que se reciben en el request, lo cual puede provocar que se guarden valores incorrectos o inseguros.
+2. Se utiliza find() sin validar si el registro existe. Esto puede provocar errores si el order no es encontrado. se puede utilizar findOrFail() para enviar un error 404 si el registro no es encontrado.
+3. Se accede a la relación $order->user sin validar si el usuario existe, lo que puede generar errores si la relación es null.
+4. No se está utilizando correctamente la inyección de dependencias, ya que se recibe el $id en lugar del modelo directamente.
+5. Se está colocando demasiada lógica dentro del controlador, lo cual puede hacer que crezca demasiado y sea difícil de mantener se puede separar en un Service o a un Job.
+6. El envío de correo se realiza de forma síncrona con Mail::send(), lo cual puede afectar el rendimiento de la aplicación. Es mejor utilizar colas para ejecutar esta tarea en segundo plano.
 
 Para mi versión corregida busco la mejor forma que seria utilizar el Service con el Job, por lo que se espera separar la logica y enviar el correo en segundo plano por medio del Job.
 
@@ -384,6 +381,8 @@ public function update(Request $request, Order $order, OrderService $service)
 Implementa una Query Scope reutilizable que filtre registros por rango de fechas y por
 un conjunto de estados, permitiendo combinarse con otros scopes.
 
+### Respuesta 2.2
+
 Utilizando el ejercicio de de la sección 3.1 voy a implementar el scope en el modelo Reservations, este modelo contiene los campos start_time, end_time y status.
 
 ```php
@@ -410,6 +409,8 @@ Para utilizarlo en el nombre no se agrega la palabra scope ya que laravel lo rec
 Escribe un Artisan command que exporte usuarios a CSV en chunks de 500 para evitar
 memory overflow.
 El comando debe aceptar --since y --status como opciones.
+
+### Respuesta 2.3
 
 Para este caso comienzo con el comando 
 ```bash
@@ -513,6 +514,7 @@ Requests con validaciones complejas (ej: no doble reserva)
 Resource classes para transformar la salida
 Políticas de autorización (admin vs usuario normal)
 Manejo de errores y rate limiting
+
 #### Respuesta 3.1
 Para este caso armé una API REST en Laravel para manejar reservas de salas, cuidando principalmente cómo estructurar endpoints, validaciones, permisos y respuestas para que todo el flujo funcione bien.
 
@@ -537,6 +539,7 @@ Propón una estructura de base de datos (tablas y relaciones) para:
 - Roles y permisos dinámicos
 - Logs de acciones (quién, qué, cuándo, IP , user agent)
 - Soft deletes y versionado de cambios en una tabla principal
+
 #### Respuesta 3.2
 Como una propueta de estructura de la base de datos pensando en que fuera flexible para manejar usuarios con múltiples roles, permisos dinámicos, auditoría de acciones y control de cambios en las reservas.
 
@@ -565,6 +568,7 @@ Con esta estructura logré una base de datos flexible, con control de permisos d
 ![Estructura de la base de datos](./DB.png)
 
 ### 3.3 Sistema de caché para reportes pesados Explica cómo implementarías un sistema de caché para reportes pesados que se invalida automáticamente cuando cambian los datos fuente. ¿Qué herramientas de Laravel usarías?
+
 #### Respuesta 3.3
 Para implementar un sistema de caché en reportes pesados, el objetivo es evitar recalcular consultas costosas en cada petición, almacenando el resultado y reutilizándolo mientras los datos no cambien.
 En Laravel una forma para realizarlo es utilizando el facade Cache, principalmente con el método remember(), que permite almacenar el resultado de una consulta durante un tiempo determinado.
@@ -604,6 +608,7 @@ Referencias:
 ### 4.1 Optimización de búsqueda
 Una tabla products tiene 5 millones de registros. El endpoint /api/products/search?q=... está tardando >5 segundos.
 ¿Cómo lo optimizarías? Menciona índices, ElasticSearch/Meilisearch, Scout, caching y paginación con cursor.
+
 #### Respuesta 4.1
 Cuando se tienen millones de registros en una tabla, las búsquedas pueden volverse lentas, por lo que es importante planear estrategias para optimizar la forma en que se obtienen los datos.
 Uno de los primeros pasos es utilizar índices en la base de datos. Estos se definen en las columnas que se utilizan con mayor frecuencia en las búsquedas, lo que permite que las consultas sean más rápidas al evitar recorrer toda la tabla.
@@ -666,6 +671,7 @@ Referencias:
 ### 4.3 Deadlocks en MySQL
 ¿Cómo depurarías una deadlock en una transacción MySQL ejecutada desde Laravel?
 ¿Qué herramientas y configuraciones revisarías?
+
 #### Respuesta 4.3
 Para depurar un deadlock en MySQL, primero se debe identificar en qué parte del sistema se está ejecutando la transacción y si el conflicto ocurre sobre la misma tabla o entre diferentes tablas, analizando cuáles son las transacciones que están esperando recursos entre sí.
 Como primera acción, se puede revisar el estado de InnoDB en MySQL utilizando:
