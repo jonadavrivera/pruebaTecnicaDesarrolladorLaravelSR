@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Reservations;
+use App\Policies\ReservationPolicy;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Reservations::class, ReservationPolicy::class);
+
         $this->configureDefaults();
     }
 
